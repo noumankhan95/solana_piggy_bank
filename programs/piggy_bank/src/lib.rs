@@ -6,9 +6,9 @@ declare_id!("26idqGYy3q6ujrkBuL5ugKu3j4dXTZD7KswEmg5NHJYq");
 
 #[program]
 pub mod piggy_bank {
-
+    pub use super::instructions::*;
     use super::*;
-    use instructions::*;
+
     pub fn initialize(ctx: Context<CreatePiggyBank>, lock_time: i64) -> Result<()> {
         create_piggy_bank(ctx, lock_time)?;
         Ok(())
