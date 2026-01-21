@@ -15,5 +15,6 @@ pub fn create_piggy_bank(ctx: Context<CreatePiggyBank>, lock_time: i64) -> Resul
     ctx.accounts.piggy_bank.owner = ctx.accounts.signer.key();
     ctx.accounts.piggy_bank.amount = 0;
     ctx.accounts.piggy_bank.unlock_time = Clock::get()?.unix_timestamp + lock_time;
+    ctx.accounts.piggy_bank.bump = ctx.bumps.piggy_bank;
     Ok(())
 }

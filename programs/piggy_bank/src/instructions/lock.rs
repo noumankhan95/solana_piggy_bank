@@ -4,6 +4,7 @@ use crate::errors::PiggyBankError;
 use crate::state::PiggyBank;
 #[derive(Accounts)]
 pub struct Lock<'info> {
+    #[account(mut)]
     pub signer: Signer<'info>,
     #[account(
         mut,
@@ -26,12 +27,20 @@ pub fn lock_solana(ctx: Context<Lock>, amount: u64) -> Result<()> {
         PiggyBankError::Unauthorized
     );
 
-    let cpi_accounts = anchor_lang::system_program::Transfer {
-        from: ctx.accounts.signer.to_account_info(),
-        to: piggy_bank.to_account_info(),
-    };
-    let cpi_ctx = CpiContext::new(ctx.accounts.system_program.to_account_info(), cpi_accounts);
-    anchor_lang::system_program::transfer(cpi_ctx, amount)?;
+    // Build transfer instruction: from signer -> PDA
+    let ix = system_instruction::transfer(&ctx.accounts.signer.key(), &piggy_bank.key(), amount);
+
+    // Execute transfer
+    anchor_lang::solana_program::program::invoke(
+        &ix,
+        &[
+            ctx.accounts.signer.to_account_info(),
+            piggy_bank.to_account_info(),
+        ],
+    )?;
+
+    // Update PiggyBank account state
     piggy_bank.amount += amount;
+
     Ok(())
 }
